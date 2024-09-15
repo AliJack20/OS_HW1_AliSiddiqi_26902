@@ -3,49 +3,19 @@
 #include "user/user.h"
 
 int main(void) {
-    int p1[2], p2[2];    
-    char buf[2];         
-    int pid;
+int p[2];
+char buf[100];
+pipe(p);
 
-    
-    pipe(p1);  
-    pipe(p2);  
+int pid = fork();
+if (pid == 0) {
+write(p[1], "ping", 4);
+printf("Thread id %d: received ping\n", getpid());
+}
+else {
+wait(0);
+read(p[0], buf, 4);
+printf("Thread id %d: received pong\n", getpid());
 
-    pid = fork();  
-
-    if (pid < 0) {
-        
-        printf("Fork failed\n");
-        exit(1);
-    } else if (pid == 0) {
-        
-        for (int i = 0; i < 10; i++) {
-            
-            read(p1[0], buf, 1);
-            buf[1] = '\0';  
-            printf("%d: received ping %s\n", getpid(), buf);
-
-            
-            buf[0] += 1;
-            write(p2[1], buf, 1);
-        }
-        exit(0);
-    } else {
-        
-        buf[0] = 'A';  
-        buf[1] = '\0'; 
-
-        for (int i = 0; i < 5; i++) {
-            
-            write(p1[1], buf, 1);
-
-            
-            read(p2[0], buf, 1);
-            buf[1] = '\0';  
-            printf("%d: received pong %s\n", getpid(), buf);
-        }
-        
-        wait(0);
-        exit(0);
-    }
+}
 }
